@@ -1,106 +1,72 @@
-import PatternOverlay from "@/components/ui/PatternOverlay";
-import MasonryGallery from "@/components/sections/MasonryGallery";
-import Button from "@/components/ui/Button";
-import Link from "next/link";
+import PatternOverlay from '@/components/ui/PatternOverlay';
+import MasonryGallery from '@/components/sections/MasonryGallery';
+import Button from '@/components/ui/Button';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function Home() {
   return (
     <>
-      {/* HERO SECTION */}
+      {/* HERO */}
       <PatternOverlay variant="hero" intensity={7}>
         <section className="min-h-screen flex items-center relative">
-          <div className="max-w-screen-2xl mx-auto px-6 md:px-10 pt-20 relative z-10">
-            <div className="max-w-[780px]">
-              <h1 className="heading-serif text-[64px] sm:text-[108px] md:text-[148px] leading-[0.84] tracking-[-0.07em]">
-                Lucy Gray R
-              </h1>
-              <p className="text-[#4A5D4E] text-xl sm:text-[34px] mt-3 tracking-wide">
-                Creative AI Studio
-              </p>
+          <div className="absolute inset-0">
+            <Image
+              src="/images/beauty-1.jpg"
+              alt="Lucy Gray R"
+              fill
+              className="object-cover"
+              priority
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/60" />
+          </div>
 
-              <div className="mt-12 md:mt-20 max-w-lg text-base md:text-[17.5px] leading-relaxed text-[#FDFCF8]/90">
-                Монгол брэндийн сүнсийг гүнзгий ойлгож,
-                <br />
-                AI-г зөвхөн хэрэгсэл болгон ашиглаж,
-                <br />
-                органик, тансаг, үнэн мэдрэмжтэй визуал ертөнц бүтээдэг студи.
+          <div className="relative z-10 max-w-screen-2xl mx-auto px-6 md:px-10 pt-20 w-full">
+            <div className="max-w-3xl">
+              <div className="mb-6 inline-block px-10 py-3 border border-white/60 text-xs tracking-[0.2em] text-white">
+                CREATIVE AI STUDIO • ULAANBAATAR
               </div>
 
-              <div className="mt-12 md:mt-16 flex flex-wrap gap-4 md:gap-6">
-                <Button variant="primary" size="large">
-                  SHOP ҮЗЭХ
-                </Button>
+              <h1 className="heading-serif text-[92px] md:text-[120px] leading-none tracking-[-0.06em] text-white mb-8">
+                Lucy Gray R
+              </h1>
+
+              <p className="text-xl md:text-2xl text-white/90 max-w-2xl tracking-[-0.01em]">
+                We see the soul of the brand.<br />
+                AI is only the tool we use to reveal it.
+              </p>
+
+              <div className="mt-16 flex flex-col sm:flex-row gap-6">
                 <Link href="/workshop">
-                  <Button variant="secondary" size="large">
-                    AI WORKSHOP
-                  </Button>
+                  <Button variant="primary" size="large">AI WORKSHOP</Button>
+                </Link>
+                <Link href="/shop">
+                  <Button variant="secondary" size="large">VIEW THE WORK</Button>
                 </Link>
               </div>
             </div>
           </div>
 
-          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.25em] text-white/30">
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 text-white/70 text-xs tracking-widest flex flex-col items-center">
             SCROLL TO DISCOVER
+            <div className="w-px h-16 bg-white/30 mt-4" />
           </div>
         </section>
       </PatternOverlay>
 
-      {/* SIGNATURE LINE */}
-      <div className="border-t border-b border-white/10 py-6 text-center text-xs tracking-widest text-[#6F7C72]">
-        ALL IMAGES ON THIS SITE WERE CREATED USING AI — BUT THE DIRECTION IS
-        DEEPLY HUMAN
-      </div>
+      {/* STATEMENT */}
+      <section className="max-w-screen-2xl mx-auto px-10 py-32">
+        <div className="max-w-3xl">
+          <p className="text-2xl leading-tight tracking-[-0.02em] text-[#4A5D4E]">
+            Монгол брэндийн сүнсийг гүнзгий ойлгож,<br />
+            AI-г зөвхөн хэрэгсэл болгон ашиглаж,<br />
+            органик, тансаг, үнэн мэдрэмжтэй визуал ертөнц бүтээдэг студи.
+          </p>
+        </div>
+      </section>
 
-      {/* MASONRY GALLERY */}
+      {/* GALLERY */}
       <MasonryGallery />
-
-      {/* POSITIONING STATEMENT */}
-      <section className="max-w-3xl mx-auto px-6 md:px-10 py-24 md:py-32 text-center border-t border-white/10">
-        <p className="heading-serif text-3xl md:text-[42px] leading-tight tracking-tight">
-          We create visual systems that feel
-          <br />
-          unmistakably Mongolian — organic, quiet, and quietly luxurious.
-        </p>
-
-        <p className="mt-12 md:mt-16 text-[#6F7C72] text-sm md:text-[15.5px] leading-relaxed">
-          Энгийн AI үйлчилгээ биш.
-          <br />
-          Брэндийн мөн чанарыг ойлгож, AI-г зөвхөн хэрэгсэл болгон ашиглаж,
-          <br />
-          илүү гүнзгий, илүү органик, илүү тансаг визуал ертөнц бүтээдэг студи.
-        </p>
-      </section>
-
-      {/* TEASER SECTION */}
-      <section className="max-w-screen-2xl mx-auto px-6 md:px-10 py-24 border-t border-white/10 grid md:grid-cols-2 gap-12">
-        <div>
-          <h2 className="heading-serif text-4xl md:text-5xl">AI Workshop</h2>
-          <p className="mt-6 text-[#6F7C72] leading-relaxed">
-            Офлайн практик сургалт • 3 удаа • 9 цаг
-            <br />
-            Монгол брэндэд зориулсан органик AI визуал ур чадвар
-          </p>
-          <Link
-            href="/workshop"
-            className="inline-block mt-10 border border-white/40 hover:border-white/70 px-10 py-4 text-sm tracking-widest transition-colors duration-300"
-          >
-            ДЭЛГЭРЭНГҮЙ ҮЗЭХ
-          </Link>
-        </div>
-
-        <div>
-          <h2 className="heading-serif text-4xl md:text-5xl">Work With Us</h2>
-          <p className="mt-6 text-[#6F7C72] leading-relaxed">
-            Брэндийнхээ дараагийн визуал бүлгийг хамт бүтээе
-          </p>
-          <Link
-            href="/work-with-us"
-            className="inline-block mt-10 border border-white/40 hover:border-white/70 px-10 py-4 text-sm tracking-widest transition-colors duration-300"
-          >
-            ХАМТРАН АЖИЛЛАХ
-          </Link>
-        </div>
-      </section>
 
       {/* FOOTER */}
       <footer className="bg-[#243949] border-t border-white/10 py-20 text-center text-xs tracking-widest text-[#6F7C72]">
