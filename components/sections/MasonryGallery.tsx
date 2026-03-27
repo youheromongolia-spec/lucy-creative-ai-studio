@@ -1,9 +1,13 @@
 import Image from 'next/image';
 import PatternOverlay from '@/components/ui/PatternOverlay';
 
-const images = Array.from({ length: 16 }, (_, i) => `/images/lucy-${(i % 8) + 1}.jpg`);
+interface MasonryGalleryProps {
+  images?: string[];
+}
 
-export default function MasonryGallery() {
+const defaultImages = Array.from({ length: 16 }, (_, i) => `/images/lucy-${(i % 8) + 1}.jpg`);
+
+export default function MasonryGallery({ images = defaultImages }: MasonryGalleryProps) {
   return (
     <section className="py-24 px-8 bg-[#243949]">
       <div className="max-w-screen-2xl mx-auto columns-2 md:columns-3 lg:columns-4 gap-6">
