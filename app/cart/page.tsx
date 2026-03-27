@@ -7,6 +7,7 @@ import Button from '@/components/ui/Button';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/components/context/AuthContext';
 import { supabase } from '@/lib/supabase';
+import { createQPayInvoice } from '@/lib/qpay';
 import { useRouter } from 'next/navigation';
 
 interface CartItem {
@@ -53,21 +54,35 @@ export default function CartPage() {
 
     setLoading(true);
 
-    const { error } = await supabase
-      .from('orders')
-      .insert({
-        user_id: user.id,
-        items: cart,
-        total: subtotal,
-        status: 'pending'
-      });
+    try {
+      const orderId = `ORDER-${Date.now()}`;
 
-    if (error) {
-      alert('Захиалга үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.');
-    } else {
-      alert('Захиалга амжилттай үүслээ! Бид удахгүй холбогдоно.');
-      setCart([]);
-      localStorage.removeItem('cart');
+      // Supabase-д захиалга үүсгэх
+      const { data: order, error } = await supabase
+        .from('orders')
+        .insert({
+          user_id: user.id,
+          items: cart,
+          total: subtotal,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (error || !order) {
+        throw new Error('Захиалга үүсгэхэд алдаа гарлаа.');
+      }
+
+      // QPay invoice үүсгэх
+      const invoice = await createQPayInvoice(order.id, subtotal, `Lucy Gray R захиалга #${order.id}`);
+
+      if (invoice.qr_image) {
+        window.open(invoice.qr_image, '_blank');
+      } else if (invoice.invoice_id) {
+        window.location.href = `https://qpay.mn/q/${invoice.invoice_id}`;
+      }
+    } catch (err) {
+      alert('Төлбөр үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.');
     }
 
     setLoading(false);
