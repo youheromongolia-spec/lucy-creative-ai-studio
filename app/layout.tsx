@@ -1,21 +1,26 @@
-import type { Metadata } from "next";
-import { Inter, Playfair_Display } from "next/font/google";
-import "./globals.css";
+import type { Metadata } from 'next';
+import { Cormorant_Garamond, Inter } from 'next/font/google';
+import './globals.css';
+import { AuthProvider } from '@/components/context/AuthContext';
+import Sidebar from '@/components/layout/Sidebar';
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-serif',
 });
 
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  variable: "--font-playfair",
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-sans',
 });
 
 export const metadata: Metadata = {
-  title: "Lucy Gray R — Creative AI Studio",
-  description:
-    "Монгол брэндийн сүнсийг гүнзгий ойлгож, AI-г зөвхөн хэрэгсэл болгон ашиглаж, органик, тансаг, үнэн мэдрэмжтэй визуал ертөнц бүтээдэг студи.",
+  title: 'Lucy Gray R | Creative AI Studio',
+  description: 'We see the soul. AI only helps us reveal it. Mongolian essence • Global vision.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 };
 
 export default function RootLayout({
@@ -24,8 +29,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="mn" className={`${inter.variable} ${playfair.variable}`}>
-      <body className={inter.className}>{children}</body>
+    <html lang="mn" className={`${cormorant.variable} ${inter.variable}`}>
+      <body className="bg-[#243949] text-[#FDFCF8] antialiased">
+        <AuthProvider>
+          <div className="flex min-h-screen">
+            {/* Sidebar - Desktop */}
+            <Sidebar />
+
+            {/* Main Content */}
+            <main className="flex-1 md:ml-80 transition-all duration-300">
+              {children}
+            </main>
+          </div>
+        </AuthProvider>
+      </body>
     </html>
   );
 }
