@@ -4,16 +4,17 @@ import { useProtectedRoute } from '@/components/hooks/useProtectedRoute';
 import TactileCard from '@/components/ui/TactileCard';
 import { useAuth } from '@/components/context/AuthContext';
 
+
 export default function MyPage() {
   const isProtected = useProtectedRoute();
-  const { userName, logout } = useAuth();
+  const { user, signOut } = useAuth();
 
   if (!isProtected) return null; // Redirect хийгдэх хүртэл юу ч үзүүлэхгүй
 
   return (
     <div className="bg-[#243949] min-h-screen pt-32 px-10">
       <div className="max-w-screen-2xl mx-auto">
-        <h1 className="heading-serif text-6xl">Сайн байна уу, {userName}</h1>
+        <h1 className="heading-serif text-6xl">Сайн байна уу, {user?.email || 'Зочин'}</h1>
         <p className="text-[#4A5D4E] mt-2">Нийт худалдан авалт: 0₮</p>
 
         <div className="mt-20 grid md:grid-cols-12 gap-12">
@@ -23,7 +24,7 @@ export default function MyPage() {
               <a href="#" className="block">Хүслийн жагсаалт</a>
               <a href="#" className="block">1:1 Лавлагаа</a>
               <button
-                onClick={logout}
+                onClick={signOut}
                 className="block text-red-400 hover:underline"
               >
                 Гарах

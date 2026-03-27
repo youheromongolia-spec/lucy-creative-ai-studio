@@ -1,65 +1,61 @@
+// components/context/AuthContext.tsx
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 
-type AuthContextType = {
+interface AuthContextType {
+  user: User | null;
   isLoggedIn: boolean;
+  loading: boolean;
   isAuthLoading: boolean;
-  userName: string | null;
-  login: (name: string) => Promise<void>;
-  logout: () => Promise<void>;
-  refreshSession: () => Promise<void>;
-};
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+}
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAuthLoading, setIsAuthLoading] = useState(true);
-  const [userName, setUserName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  const refreshSession = async () => {
-    setIsAuthLoading(true);
-    try {
-      const response = await fetch('/api/auth/session', { method: 'GET' });
-      const data = (await response.json()) as {
-        isLoggedIn?: boolean;
-        user?: { name?: string } | null;
-      };
-      setIsLoggedIn(Boolean(data.isLoggedIn));
-      setUserName(data.user?.name ?? null);
-    } catch {
-      setIsLoggedIn(false);
-      setUserName(null);
-    } finally {
-      setIsAuthLoading(false);
-    }
-  };
 
   useEffect(() => {
-    void refreshSession();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+      setIsLoggedIn(!!session);
+      setLoading(false);
+    });
+
+    // Initial check
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsLoggedIn(!!session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (name: string) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
-    });
-    const data = (await response.json()) as { error?: string; user?: { name?: string } };
-    if (!response.ok) throw new Error(data.error ?? 'Нэвтрэхэд алдаа гарлаа.');
-    setIsLoggedIn(true);
-    setUserName(data.user?.name ?? name);
+  const signIn = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
   };
 
-  const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    setIsLoggedIn(false);
-    setUserName(null);
+  const signUp = async (email: string, password: string) => {
+    const { error } = await supabase.auth.signUp({ email, password });
+    if (error) throw error;
+  };
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, isAuthLoading, userName, login, logout, refreshSession }}>
+    <AuthContext.Provider value={{ user, isLoggedIn, loading, isAuthLoading: loading, signIn, signUp, signOut }}>
       {children}
     </AuthContext.Provider>
   );
@@ -67,6 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
   return context;
 };

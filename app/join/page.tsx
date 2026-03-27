@@ -10,14 +10,22 @@ export default function Join() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login } = useAuth();
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { signUp } = useAuth();
   const router = useRouter();
 
-  const handleJoin = (e: React.FormEvent) => {
+  const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (name && email) {
-      login(name);
+    setError('');
+    setLoading(true);
+    try {
+      await signUp(email, password);
       router.push('/my-page');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Бүртгэхэд алдаа гарлаа.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -41,7 +49,10 @@ export default function Join() {
               <input id="password" type="password" title="Нууц үг" placeholder="Нууц үг оруулах" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full border-b border-[#172019]/30 pb-4 focus:outline-none focus:border-[#4A5D4E]" required />
             </div>
 
-            <Button variant="primary" size="large" className="w-full mt-8">БҮРТГЭЛ ҮҮСГЭХ</Button>
+            <Button variant="primary" size="large" className="w-full mt-8" disabled={loading}>
+              {loading ? 'БҮРТГЭЖ БАЙНА...' : 'БҮРТГЭЛ ҮҮСГЭХ'}
+            </Button>
+            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
           </form>
         </div>
       </PatternOverlay>

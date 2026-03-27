@@ -1,77 +1,183 @@
+// app/cart/page.tsx
 'use client';
 
-import { useProtectedRoute } from '@/components/hooks/useProtectedRoute';
-import { useAuth } from '@/components/context/AuthContext';
+import Image from 'next/image';
+import PatternOverlay from '@/components/ui/PatternOverlay';
 import Button from '@/components/ui/Button';
-import TactileCard from '@/components/ui/TactileCard';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/components/context/AuthContext';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 
-export default function Cart() {
-  const isProtected = useProtectedRoute();
-  const { isLoggedIn, userName } = useAuth();
+interface CartItem {
+  id: number;
+  title: string;
+  price: number;
+  image: string;
+  quantity: number;
+}
+
+export default function CartPage() {
+  const { user, isLoggedIn } = useAuth();
   const router = useRouter();
+  const [cart, setCart] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Жишээ cart item (бодит төсөлд cart state ашиглана)
-  const cartItems = [
-    { id: 1, title: "Mongolian Brand Visual System 2026", price: 285000 }
-  ];
+  // localStorage-с cart унших
+  useEffect(() => {
+    const saved = localStorage.getItem('cart');
+    if (saved) setCart(JSON.parse(saved));
+  }, []);
+
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const updateQuantity = (id: number, newQuantity: number) => {
+    const updated = cart.map(item => 
+      item.id === id ? { ...item, quantity: Math.max(1, newQuantity) } : item
+    );
+    setCart(updated);
+    localStorage.setItem('cart', JSON.stringify(updated));
+  };
+
+  const removeItem = (id: number) => {
+    const updated = cart.filter(item => item.id !== id);
+    setCart(updated);
+    localStorage.setItem('cart', JSON.stringify(updated));
+  };
 
   const handleCheckout = async () => {
-    if (!isLoggedIn) return;
+    if (!user) {
+      router.push('/login');
+      return;
+    }
 
     setLoading(true);
 
-    try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      alert('Захиалга амжилттай үүслээ!');
-      router.push('/my-page');
-    } catch (err) {
-      console.error(err);
-      alert('Захиалга үүсгэхэд алдаа гарлаа.');
-    } finally {
-      setLoading(false);
+    const { error } = await supabase
+      .from('orders')
+      .insert({
+        user_id: user.id,
+        items: cart,
+        total: subtotal,
+        status: 'pending'
+      });
+
+    if (error) {
+      alert('Захиалга үүсгэхэд алдаа гарлаа. Дахин оролдоно уу.');
+    } else {
+      alert('Захиалга амжилттай үүслээ! Бид удахгүй холбогдоно.');
+      setCart([]);
+      localStorage.removeItem('cart');
     }
+
+    setLoading(false);
   };
 
-  if (!isProtected) return null;
+  if (!isLoggedIn) {
+    return (
+      <div className="min-h-screen bg-[#FDFCF8] flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <h2 className="heading-serif text-5xl tracking-[-0.04em] mb-6">Сагсандаа орохын тулд нэвтэрнэ үү</h2>
+          <Button variant="primary" size="large" href="/login">
+            НЭВТРЭХ
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="bg-[#243949] min-h-screen pt-32 px-10">
-      <div className="max-w-screen-2xl mx-auto">
-        <h1 className="heading-serif text-6xl">Cart</h1>
+    <div className="bg-[#FDFCF8] text-[#243949] min-h-screen pb-32">
+      <div className="max-w-screen-2xl mx-auto px-10 py-20">
+        <h1 className="heading-serif text-6xl tracking-[-0.05em] mb-16">Your Cart</h1>
 
-        <div className="mt-16 grid md:grid-cols-12 gap-12">
-          <div className="md:col-span-7 space-y-8">
-            {cartItems.map(item => (
-              <TactileCard key={item.id}>
-                <div className="flex gap-8">
-                  <div className="w-32 h-32 bg-[#F5F0E8] flex-shrink-0" />
-                  <div>
-                    <h3 className="heading-serif text-2xl">{item.title}</h3>
-                    <p className="text-[#6F7C72] mt-2">1 × ₮{item.price.toLocaleString()}</p>
+        <div className="grid lg:grid-cols-12 gap-20">
+          {/* Cart Items */}
+          <div className="lg:col-span-7 space-y-16">
+            {cart.length === 0 ? (
+              <div className="text-center py-32 border border-[#243949]/10">
+                <p className="text-3xl text-[#4A5D4E]">Сагс хоосон байна</p>
+                <Button variant="secondary" className="mt-10" href="/shop">
+                  SHOP РУУ БУЦАХ
+                </Button>
+              </div>
+            ) : (
+              cart.map((item) => (
+                <div key={item.id} className="flex flex-col md:flex-row gap-10 border-b border-[#243949]/10 pb-12">
+                  <div className="relative w-full md:w-60 aspect-[4/5] border border-[#243949]/15 overflow-hidden flex-shrink-0">
+                    <Image 
+                      src={item.image} 
+                      alt={item.title}
+                      fill 
+                      className="object-cover" 
+                    />
+                    <PatternOverlay variant="image" intensity={6} />
+                  </div>
+
+                  <div className="flex-1">
+                    <h3 className="heading-serif text-3xl tracking-[-0.03em] mb-2">{item.title}</h3>
+                    <p className="text-xl text-[#4A5D4E]">{item.price.toLocaleString()} ₮</p>
+
+                    <div className="mt-8 flex items-center gap-8">
+                      <div className="flex items-center border border-[#243949]/20 text-lg">
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="px-5 py-3 hover:bg-[#243949]/5 transition-colors"
+                        >
+                          −
+                        </button>
+                        <span className="px-8 font-light">{item.quantity}</span>
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="px-5 py-3 hover:bg-[#243949]/5 transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <button 
+                        onClick={() => removeItem(item.id)}
+                        className="text-xs tracking-widest text-[#6F7C72] hover:text-red-700 transition-colors"
+                      >
+                        УСТГАХ
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </TactileCard>
-            ))}
+              ))
+            )}
           </div>
 
-          <div className="md:col-span-5">
-            <TactileCard className="sticky top-28">
-              <div className="text-sm tracking-widest">НИЙТ ДҮН</div>
-              <div className="text-5xl font-light mt-4">₮285,000</div>
-              
+          {/* Sticky Summary */}
+          <div className="lg:col-span-5">
+            <div className="sticky top-28 border border-[#243949]/15 p-10 bg-white">
+              <h3 className="heading-serif text-4xl mb-10">Order Summary</h3>
+
+              <div className="space-y-6 text-lg">
+                <div className="flex justify-between">
+                  <span>Нийт дүн</span>
+                  <span>{subtotal.toLocaleString()} ₮</span>
+                </div>
+                <div className="flex justify-between border-t border-[#243949]/10 pt-6 font-medium text-xl">
+                  <span>Төлөх дүн</span>
+                  <span>{subtotal.toLocaleString()} ₮</span>
+                </div>
+              </div>
+
               <Button 
                 variant="primary" 
                 size="large" 
                 className="w-full mt-12"
                 onClick={handleCheckout}
-                disabled={loading}
+                disabled={loading || cart.length === 0}
               >
-                {loading ? 'Захиалга үүсгэж байна...' : 'ЗАХИАЛГА ӨГӨХ'}
+                {loading ? "Захиалга үүсгэж байна..." : "ЗАХИАЛГА БАТЛАХ"}
               </Button>
-            </TactileCard>
+
+              <p className="text-center text-xs tracking-widest text-[#6F7C72] mt-10">
+                Захиалга баталгаажсаны дараа бид тантай холбогдоно
+              </p>
+            </div>
           </div>
         </div>
       </div>

@@ -12,7 +12,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useAuth();
+  const { signIn } = useAuth();
   const router = useRouter();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -21,10 +21,10 @@ export default function Login() {
     setError('');
 
     try {
-      await login(email);
+      await signIn(email, password);
       router.push('/my-page');
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Нэвтрэхэд алдаа гарлаа');
+    } catch (err: any) {
+      setError(err.message || 'Нэвтрэхэд алдаа гарлаа. Дахин оролдоно уу.');
     } finally {
       setLoading(false);
     }
